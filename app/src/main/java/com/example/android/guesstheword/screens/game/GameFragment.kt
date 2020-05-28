@@ -17,6 +17,7 @@
 package com.example.android.guesstheword.screens.game
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -67,6 +68,7 @@ class GameFragment : Fragment() {
 
         gameViewModel.word.observe(this, Observer {newWord ->
             binding.wordText.text = newWord.toString()
+            gameViewModel.startCountDown()
         })
 
         gameViewModel.eventGameFinished.observe(this, Observer {hasfinished ->
@@ -74,6 +76,10 @@ class GameFragment : Fragment() {
                 gameFinished()
                 gameViewModel.onGameFinishedCalled()
             }
+        })
+
+        gameViewModel.countDownTimer.observe(this, Observer {timerValue ->
+            Log.i("GameFragment", timerValue.toString())
         })
 
         return binding.root

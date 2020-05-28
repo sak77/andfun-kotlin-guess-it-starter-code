@@ -1,8 +1,11 @@
 package com.example.android.guesstheword.screens.game
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.NonCancellable.start
+import kotlin.concurrent.thread
 
 /**
 Created by sshriwas on 2020-05-27
@@ -27,11 +30,26 @@ class GameViewModel : ViewModel() {
     //Flag to indicate game is finished
     val eventGameFinished = MutableLiveData<Boolean>()
 
+    //Count down timer
+    private var _countdownTimer = MutableLiveData<Int>()
+    val countDownTimer : LiveData<Int>
+    get() = _countdownTimer
+
+    lateinit var mythread : Thread
+
     init {
         println("GameViewModel created!")
         //Init live data values
         _score.value = 0
         _word.value = ""
+        _countdownTimer.value = 30
+
+        mythread = thread(start = false) {
+            while (_countdownTimer.value!! > 0) {
+                Thread.sleep(1000)
+                _countdownTimer.postValue(_countdownTimer.value?.minus(1))
+            }
+        }
 
         resetList()
         nextWord()
@@ -95,10 +113,18 @@ class GameViewModel : ViewModel() {
     //called when associated activity or fragment is destroyed
     override fun onCleared() {
         super.onCleared()
+        //Terminate any operations
+        if (mythread.isAlive) {
+            mythread.interrupt()
+        }
         println("GameViewModel destroyed!")
     }
 
     fun onGameFinishedCalled() {
         eventGameFinished.value = false
+    }
+
+    fun startCountDown() {
+        mythread.start()
     }
 }
